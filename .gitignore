@@ -24,3 +24,5 @@ lerna-debug.log*
 
 # Files
 pruebas.js
+
+.env
