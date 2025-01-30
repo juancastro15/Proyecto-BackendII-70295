@@ -2,8 +2,8 @@ import passport from "passport";
 import local from "passport-local";
 import jwt, { ExtractJwt } from "passport-jwt";
 import githubStrategy from "passport-github2";
-import UserManager from "../service/users.services.js";
-import { usersModel } from "../models/user.model.js";
+import UserManager from "../services/users.services.js";
+import { usersModel } from "../services/mongo/models/users.model.js";
 import { createHash, isValidPassword } from "../utilities/hashing.utils.js";
 
 const localStrategy = local.Strategy;

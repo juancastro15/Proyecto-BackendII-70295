@@ -20,6 +20,10 @@ const cartSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    status: {
+      type: String,
+      default: "created",
+    },
   },
   {
     timestamps: true, // fecha de creación y update

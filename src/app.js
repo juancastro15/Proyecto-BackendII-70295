@@ -1,30 +1,48 @@
-import express from 'express'
-import dotenv from 'dotenv'
-import userRoutes from './src/routes/user.routes'
-import mongoose from 'mongoose'
+import express from "express";
 import handlebars from "express-handlebars";
 import productsRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 import usersRouter from "./routes/users.router.js";
+import ticketsRouter from "./routes/tickets.router.js";
 import viewsRouter from "./routes/views.router.js";
+import __dirname from "./utils.js";
 import { Server } from "socket.io";
+import "dotenv/config";
+import cors from "cors";
 import passport from "passport";
 import initializatePassport from "./config/passport.config.js";
 import cookieParser from "cookie-parser";
+import MongoSingleton from "./config/mongoSingleton.js";
+import { customResponses } from "./utilities/customResponses.js";
 
 // para cambiar de persistencia, comentar/descomentar uno de estos 2 imports: filesystem para archivos JSON o db para usar MongoDB
-
 // import ProductManager from "./services/filesystem/ProductManager.js";
-import ProductManager from "./services/db/product.services.js";
+import ProductManager from "./services/mongo/product.dao.js";
 
 // config express
 const app = express();
 const PORT = process.env.PORT || 8080; // la variable env.PORT solo la uso para levantar el server en glitch.com
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: "http://localhost:8080",
+    credentials: true,
+    methods: "GET, POST, PUT, DELETE",
+  })
+);
+
+// auth con passport
 app.use(cookieParser());
 app.use(passport.initialize());
 initializatePassport();
+
+// manejo de errores y respuestas
+app.use(customResponses);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong!" });
+});
 
 // config Handlebars
 app.engine("handlebars", handlebars.engine());
@@ -38,6 +56,7 @@ app.use(express.static(__dirname + "/public/"));
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/tickets", ticketsRouter);
 app.use("/", viewsRouter);
 
 // telemetría
@@ -46,17 +65,7 @@ app.use("/ping", (req, res) => {
 });
 
 // conexión a la DB
-const PathDB = process.env.DB_ACCESS;
-const connectMongoDB = async () => {
-  try {
-    await mongoose.connect(PathDB);
-    console.log("Conectado a la DB usando Moongose!");
-  } catch (error) {
-    console.log("No me puedo conectar a la DB usando Moongose: " + error);
-    process.exit();
-  }
-};
-connectMongoDB();
+MongoSingleton.getInstance();
 
 const httpServer = app.listen(PORT, () => {
   console.log(`Server escuchando en el puerto ${PORT}`);

@@ -1,4 +1,4 @@
-import { cartsModel } from "../models/carts.model";
+import { cartsModel } from "./models/carts.model.js";
 
 export default class CartManager {
   constructor() {}
@@ -105,5 +105,9 @@ export default class CartManager {
     } catch (error) {
       throw error;
     }
+  }
+
+  purchaseCart(cid) {
+    return cartsModel.findById(cid);
   }
 }
